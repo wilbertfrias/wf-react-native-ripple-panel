@@ -1,0 +1,21 @@
+{
+  "name": "wf-react-native-ripple-panel",
+  "version": "1.0.0",
+  "description": "A ripple effect panel to sourround other components",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Wilbert Martin Frias Canto",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wilbertfrias/wf-react-native-ripple-panel.git"
+  },
+  "devDependencies": {
+    "metro-react-native-babel-preset": "^0.54.1"
+  },
+  "dependencies": {
+    "prop-types": "^15.7.2"
+  }
+}
