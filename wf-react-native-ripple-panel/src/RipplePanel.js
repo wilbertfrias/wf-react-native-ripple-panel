@@ -4,16 +4,21 @@ import { TouchableOpacity, View, Animated, Easing } from 'react-native';
 
 import BaseState from './BaseState';
 
-export default class RipplePanel extends React.Component<propsTypesPanel>
+export default class RipplePanel extends React.Component
 {
     
     static defaultProps = {
-        rippleColor:'black'
+        rippleColor:'black',
+        zIndex:0,
+        animationTime:5000,
+
+        secondaryPanel:null,
+        showSecondaryPanel: false,
     }
 
     constructor(props)
     {
-        myBaseState = BaseState();
+        var myBaseState = BaseState();
 
         super(props);
 
@@ -54,8 +59,9 @@ export default class RipplePanel extends React.Component<propsTypesPanel>
             >
                 <View style={{...styles.subview}} pointerEvents="none" onLayout={(event)=>this.setSize(event)}>
                     
-                    {this.props.children}
-                    {this.renderRippleView()}
+                    {(this.props.showSecondaryPanel && this.state.showSecondaryPanel)?null:this.props.children}
+                    {(this.props.showSecondaryPanel && this.state.showSecondaryPanel && (this.props.secondaryPanel))? (this.props.secondaryPanel): null }
+                    {(!(this.props.showSecondaryPanel && this.state.showSecondaryPanel))?this.renderRippleView():null}
 
                 </View>
             </TouchableOpacity>
@@ -95,19 +101,41 @@ export default class RipplePanel extends React.Component<propsTypesPanel>
         );
     }
 
+    /**Called onLongPressed
+    *
+    */
     onLongPress(nativeEvent)
     {
         this.setLocation(nativeEvent);
         this.setRadius();
+        this.setState({ startTime: new Date()});
 
         this.state.opacityValue.setValue(this.state.maxOpacity);
         Animated.timing(this.state.scaleValue, {
             toValue: this.state.maxScale,
-            duration: 5000,
+            duration: this.props.animationTime,
             easing: Easing.bezier(0.0, 0.0, 0.2, 1),
-        }).start();
+        }).start(()=>{
+            this.setState({ endTimeAnimation: new Date() });
+            var transcurrentTime = this.state.endTimeAnimation - this.state.startTime;
+
+            if(transcurrentTime>=this.props.animationTime)
+            {
+                if(this.props.secondaryPanel!=null)
+                {
+                    if(this.props.showSecondaryPanel)
+                    {
+                        this.setState({showSecondaryPanel:true});
+                    }
+                }
+            }
+
+        });
     }
 
+    /**Called onPressedOut
+     * 
+     */
     onPressedOut()
     {
         Animated.timing(this.state.opacityValue, {
@@ -115,21 +143,31 @@ export default class RipplePanel extends React.Component<propsTypesPanel>
         }).start(()=>{
             this.state.scaleValue.setValue(0.01);
             this.state.opacityValue.setValue(0);//Hide the "small bug"
+            this.setState({ endTimeOnPressOut: new Date() });
         });
     }
 
+    /**Gets the size from the (internal) View and sets it's values in the local state
+     * 
+     */
     setSize(event)
     {
         var { width, height } = event.nativeEvent.layout;
         this.setState({ width, height });
     }
 
+    /**Sets the location for the ripple circle
+    * 
+    */
     setLocation(nativeEvent)
     {
         const {locationX, locationY}=nativeEvent;
         this.setState({ locationX, locationY });
     }
 
+    /**Sets the radio for the ripple
+     * Based on the size of the view and the onLongPressed position
+     */
     setRadius()
     {
         const locX = this.state.locationX;
@@ -153,12 +191,10 @@ export default class RipplePanel extends React.Component<propsTypesPanel>
 const propsTypes = 
 {
     rippleColor: PropTypes.string,
-    zIndex: PropTypes.number
-}
-
-interface propsTypesPanel {
-    rippleColor?: string,
-    zIndex?: number
+    zIndex: PropTypes.number,
+    animationTime: PropTypes.number,
+    secondaryPanel: PropTypes.element,
+    showSecondaryPanel: PropTypes.bool,
 }
 
 const styles = {
