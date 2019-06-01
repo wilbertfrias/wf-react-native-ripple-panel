@@ -16,7 +16,13 @@ const BaseState=()=>{
         locationY:0,
 
         width:0,
-        height:0
+        height:0,
+
+        showSecondaryPanel:false,
+        
+        startTime:0,
+        endTimeAnimation:0,
+        endTimeOnPressOut:0,        
     });
             
 }
